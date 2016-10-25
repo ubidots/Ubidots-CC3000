@@ -85,11 +85,11 @@ float Ubidots::getValue(char* id) {
 	_client.connect(ip, PORT);
 	if (_client.connected()) {
     	Serial.println("Geting your variable");
-        _client.fastrprint(F("CC3000:GET:"));
+        _client.fastrprint(F("CC3000|GET:"));
         _client.fastrprint(_token);
-        _client.fastrprint(F(":"));
+        _client.fastrprint(F("|"));
         _client.fastrprint(id);
-        _client.fastrprint(F(":CC3000"));
+        _client.fastrprint(F("|end"));
     } else {
         Serial.println(F("Connection failed"));  
         currentValue = 0;  

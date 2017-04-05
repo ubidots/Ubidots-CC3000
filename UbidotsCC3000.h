@@ -22,7 +22,6 @@ Made by Mateo Velez - Metavix for Ubidots Inc
 
 #ifndef __UbidotsCC3000_
 #define __UbidotsCC3000_
-#define DEBUG_UBIDOTS
 
 #include <Adafruit_CC3000.h>
 #include <ccspi.h>
@@ -38,12 +37,11 @@ Made by Mateo Velez - Metavix for Ubidots Inc
 // On an UNO, SCK = 13, MISO = 12, and MOSI = 11
 
 #define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds) 
-#define PORT 9010
+#define PORT 9012
 ////////////////////////////////////// Ubidots parameters
 #define WEBSITE "translate.ubidots.com"
 #define USER_AGENT "CC3000/1.0"
 
-#define DEBUG_UBIDOTS
 #define MAX_VALUES 3
 
 typedef struct Value {
@@ -63,10 +61,12 @@ class Ubidots{
         Value * val;
         uint32_t ip;
         void getIpWebSite();
+        bool _debug = false;
         Adafruit_CC3000_Client _client;
  public:
         Ubidots(char* token);
         void initialize();
+        void setDebug(bool debug);
         bool setDatasourceName(char* dsName);
         bool setDatasourceTag(char* dsTag);
         float getValue(char* id);

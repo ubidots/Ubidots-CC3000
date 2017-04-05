@@ -18,6 +18,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Made by Mateo Velez - Metavix for Ubidots Inc
+Modified by Maria Hernandez for Ubidots Inc
 */
 
 #include "UbidotsCC3000.h"
@@ -39,35 +40,88 @@ Ubidots::Ubidots(char* token) {
  * @return num the data that you get from the Ubidots API
  */
 float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
-  float num;
-  int i = 0;
-  char* allData = (char *) malloc(sizeof(char) * 250);
+
   String response;
+  int timeout = 0;
+  float num;
   uint8_t bodyPosinit;
-  sprintf(allData, "Particle/1.0|LV|%s|%s:%s|end", _token, dsTag, idName);
-  _client.connect(ip, PORT);
-    if (_client.connected()) {
-        Serial.println("Geting your variable");
-        _client.fastrprint(allData);
-    } else {
-        Serial.println(F("Connection failed"));  
-        currentValue = 0;  
-        return NULL;
+  uint8_t max_retries = 0;
+  char* data = (char *) malloc(sizeof(char) * 300);
+  
+  sprintf(data, "CC3000/1.0|LV|%s|%s:%s|end", _token, dsTag, idName);
+
+   _client.connect(ip, PORT); // Initial connection
+
+    while(!_client.connected()){
+
+    if(_debug){
+        Serial.println("Attemping to connect");
     }
-    unsigned long lastRead = millis();
-    while (_client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-        while (_client.available()) {
-            char c = _client.read();
-            response += c;
+        _client.connect(ip, PORT);
+        max_retries++;
+        if(max_retries>5){
+            if(_debug){
+                Serial.println("Connection failed");
+            }
+            free(data);
+            return NULL;
+        }
+        delay(5000);
+    }
+
+    if(_debug){
+        Serial.println("Getting your variable: ");
+        Serial.println(data);
+    }
+        
+    _client.print(data);
+
+    while(!_client.available() && timeout < 5000) {
+        timeout++;
+        delay(1);
+        if(timeout>=5000){
+            if(_debug){
+                Serial.println("Error, max timeout reached");
+            }
+            _client.stop();
+            delay(5);
+            return NULL;
         }
     }
-    bodyPosinit = 3 + response.indexOf("OK|");
+
+    while (_client.available()) {
+        char c = _client.read();
+        if (c == -1){
+            if(_debug){
+                Serial.println("Error reading from server");
+            }
+            _client.stop();
+            delay(5);
+            free(data);
+            return NULL;
+        }
+        response += c;
+        delay(10);
+    }
+
+    if(_debug){
+        Serial.println("Response: ");
+        Serial.println(response); 
+    }
+
+    bodyPosinit = 4 + response.indexOf("\r\n\r\n");    
     response = response.substring(bodyPosinit);
     num = response.toFloat();
-    currentValue = 0;
+    
+    if(_debug){
+        Serial.println("Value obtained: ");
+        Serial.println(num);;
+    }
+    
+    free(data);
     _client.stop();
-    free(allData);
-    return num;
+    delay(5);
+    return num;  
 }
 
 /** 
@@ -76,39 +130,90 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
  * @return num the data that you get from the Ubidots API
  */
 float Ubidots::getValue(char* id) {
-	float num;
-	int i = 0;
-    String raw;
+    
+    String response;
+    int timeout = 0;
+    float num;
     uint8_t bodyPosinit;
-	uint8_t bodyPosend;
-	char reply[15];
-	_client.connect(ip, PORT);
-	if (_client.connected()) {
-    	Serial.println("Geting your variable");
-        _client.fastrprint(F("CC3000|GET|"));
-        _client.fastrprint(_token);
-        _client.fastrprint(F("|"));
-        _client.fastrprint(id);
-        _client.fastrprint(F("|end"));
-    } else {
-        Serial.println(F("Connection failed"));  
-        currentValue = 0;  
-        return NULL;
+    uint8_t max_retries = 0;
+    char* data = (char *) malloc(sizeof(char) * 300);
+
+    sprintf(data, "CC3000/1.0|GET|%s|%s|end", _token, id);
+
+    _client.connect(ip, PORT); // Initial connection
+
+    while(!_client.connected()){
+
+    if(_debug){
+        Serial.println("Attemping to connect");
     }
-    unsigned long lastRead = millis();
-    while (_client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-        while (_client.available()) {
-            reply[i] = _client.read();
-            Serial.print(reply[i]);
-            lastRead = millis();
-            i++;
+        _client.connect(ip, PORT);
+        max_retries++;
+        if(max_retries>5){
+            if(_debug){
+                Serial.println("Connection failed");
+            }
+            free(data);
+            return NULL;
+        }
+        delay(5000);
+    }
+
+    if(_debug){
+        Serial.println("Getting your variable: ");
+        Serial.println(data);
+    }
+        
+    _client.print(data);
+
+    while(!_client.available() && timeout < 5000) {
+        timeout++;
+        delay(1);
+        if(timeout>=5000){
+            if(_debug){
+                Serial.println("Error, max timeout reached");
+            }
+            _client.stop();
+            delay(5);
+            return NULL;
         }
     }
-    Serial.println();
-    num = atof(reply); 
-    _client.close();
+
+    while (_client.available()) {
+        char c = _client.read();
+        if (c == -1){
+            if(_debug){
+                Serial.println("Error reading from server");
+            }
+            _client.stop();
+            delay(5);
+            free(data);
+            return NULL;
+        }
+        response += c;
+        delay(10);
+    }
+
+    if(_debug){
+        Serial.println("Response: ");
+        Serial.println(response); 
+    }
+
+    bodyPosinit = 4 + response.indexOf("\r\n\r\n");    
+    response = response.substring(bodyPosinit);
+    num = response.toFloat();
+    
+    if(_debug){
+        Serial.println("Value obtained: ");
+        Serial.println(num);;
+    }
+    
+    free(data);
+    _client.stop();
+    delay(5);
     return num;
 }
+
 void Ubidots::add(char *variable_id, float value) {
   add(variable_id, value, NULL);
 }
@@ -164,14 +269,15 @@ bool Ubidots::sendAll() {
     }
     allData += "|end";
     //sprintf(allData, "%s|end", allData);
-#ifdef DEBUG_UBIDOTS
-    Serial.println(allData);
-#endif
+
+    if(_debug){
+        Serial.println(allData);
+    }
     _client.connect(ip, PORT);
     if (_client.connected()) {        // Connect to the server
-#ifdef DEBUG_UBIDOTS
-        Serial.println("Client connected"); 
-#endif
+        if(_debug){
+            Serial.println("Client connected");
+        }
         _client.print(allData);
         Serial.println("envie");
     } else {
@@ -200,6 +306,10 @@ bool Ubidots::sendAll() {
     //free(allData);
     return true;
 }
+
+void Ubidots::setDebug(bool debug){
+     _debug = debug;
+ }
 
 /**
  * Initialize the cc3000 WiFi

@@ -11,7 +11,7 @@
 #define WLAN_SECURITY   WLAN_SEC_WPA2
 
 #define TOKEN "Your_token_here"  // Replace it with your Ubidots token
-#define ID "Your_id_here" // Replace it with your Ubidots' variable ID
+#define VARIABLE_LABEL "Your_variableLabel_here" // Replace it with your Ubidots' variable label
 
 Ubidots client(TOKEN);
 
@@ -19,11 +19,11 @@ void setup() {
   Serial.begin(115200);
   client.initialize();
   client.wifiConnection(WLAN_SSID, WLAN_PASS, WLAN_SECURITY);
-
+  //client.setDebug(true); // Uncomment this line to set DEBUG on
 }
 
 void loop() {
   float value = analogRead(A0);
-  client.add(ID,value);
+  client.add(VARIABLE_LABEL, value);
   client.sendAll();
 }

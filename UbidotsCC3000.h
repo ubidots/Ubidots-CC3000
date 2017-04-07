@@ -18,11 +18,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Made by Mateo Velez - Metavix for Ubidots Inc
+Modified by Maria Carlina Hernandez for Ubidots Inc
 */
 
 #ifndef __UbidotsCC3000_
 #define __UbidotsCC3000_
-#define DEBUG_UBIDOTS
 
 #include <Adafruit_CC3000.h>
 #include <ccspi.h>
@@ -38,17 +38,19 @@ Made by Mateo Velez - Metavix for Ubidots Inc
 // On an UNO, SCK = 13, MISO = 12, and MOSI = 11
 
 #define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds) 
-#define PORT 9010
+#define PORT 9012
 ////////////////////////////////////// Ubidots parameters
 #define WEBSITE "translate.ubidots.com"
-#define USER_AGENT "CC3000/1.0"
+#define USER_AGENT "CC3000"
+#define VERSION "1.1"
 
-#define DEBUG_UBIDOTS
 #define MAX_VALUES 3
 
 typedef struct Value {
-  char *idName;
-  float idValue;
+  char  *idName;
+  char  *contextOne;
+  int idValue;
+  unsigned long timestamp_val;
 } Value;
 
 class Ubidots{
@@ -63,15 +65,18 @@ class Ubidots{
         Value * val;
         uint32_t ip;
         void getIpWebSite();
+        bool _debug = false;
         Adafruit_CC3000_Client _client;
  public:
         Ubidots(char* token);
         void initialize();
-        bool setDatasourceName(char* dsName);
-        bool setDatasourceTag(char* dsTag);
+        void setDebug(bool debug);
+        void setDataSourceName(char* dsName);
+        void setDataSourceLabel(char* dsTag);
         float getValue(char* id);
-        void add(char *variable_id, float value);
-        void add(char *variable_id, float value, char* ctext);
+        void add(char *variable_id, int value);
+        void add(char *variable_id, int value, char *ctext);
+        void add(char *variable_id, int value, char *ctext, unsigned long timestamp);
         void wifiConnection(char* ssid, char* pass, uint8_t security);
         bool sendAll();
         float getValueWithDatasource(char* dsName, char* idName);

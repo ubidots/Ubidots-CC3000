@@ -18,6 +18,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Made by Mateo Velez - Metavix for Ubidots Inc
+Modified by Maria Carlina Hernandez for Ubidots Inc
 */
 
 #include "UbidotsCC3000.h"
@@ -33,41 +34,104 @@ Ubidots::Ubidots(char* token) {
     val = (Value *)malloc(MAX_VALUES*sizeof(Value));
 }
 
+void Ubidots::setDataSourceName(char *dsName) {
+
+    _dsName = dsName;
+}
+
+void Ubidots::setDataSourceLabel(char *dsTag) {
+
+    _dsTag = dsTag;
+}
+
 /** 
  * This function is to get value from the Ubidots API
  * @arg id the id where you will get the data
  * @return num the data that you get from the Ubidots API
  */
 float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
-  float num;
-  int i = 0;
-  char* allData = (char *) malloc(sizeof(char) * 250);
+
   String response;
+  int timeout = 0;
+  float num;
   uint8_t bodyPosinit;
-  sprintf(allData, "Particle/1.0|LV|%s|%s:%s|end", _token, dsTag, idName);
-  _client.connect(ip, PORT);
-    if (_client.connected()) {
-        Serial.println("Geting your variable");
-        _client.fastrprint(allData);
-    } else {
-        Serial.println(F("Connection failed"));  
-        currentValue = 0;  
-        return NULL;
+  uint8_t max_retries = 0;
+  char* data = (char *) malloc(sizeof(char) * 300);
+  
+  sprintf(data, "%s/%s|LV|%s|%s:%s|end", USER_AGENT, VERSION, _token, dsTag, idName);
+
+   _client.connect(ip, PORT); // Initial connection
+
+    while(!_client.connected()){
+
+    if(_debug){
+        Serial.println("Attemping to connect");
     }
-    unsigned long lastRead = millis();
-    while (_client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-        while (_client.available()) {
-            char c = _client.read();
-            response += c;
+        _client.connect(ip, PORT);
+        max_retries++;
+        if(max_retries>5){
+            if(_debug){
+                Serial.println("Connection failed");
+            }
+            free(data);
+            return NULL;
+        }
+        delay(5000);
+    }
+
+    if(_debug){
+        Serial.println("Getting your variable: ");
+        Serial.println(data);
+    }
+        
+    _client.print(data);
+
+    while(!_client.available() && timeout < 5000) {
+        timeout++;
+        delay(1);
+        if(timeout>=5000){
+            if(_debug){
+                Serial.println("Error, max timeout reached");
+            }
+            _client.stop();
+            delay(5);
+            return NULL;
         }
     }
-    bodyPosinit = 3 + response.indexOf("OK|");
+
+    while (_client.available()) {
+        char c = _client.read();
+        if (c == -1){
+            if(_debug){
+                Serial.println("Error reading from server");
+            }
+            _client.stop();
+            delay(5);
+            free(data);
+            return NULL;
+        }
+        response += c;
+        delay(10);
+    }
+
+    if(_debug){
+        Serial.println("Response: ");
+        Serial.println(response); 
+    }
+
+    bodyPosinit = 4 + response.indexOf("\r\n\r\n");    
     response = response.substring(bodyPosinit);
     num = response.toFloat();
-    currentValue = 0;
+    
+    if(_debug){
+        Serial.println("Value obtained: ");
+        Serial.println(num);;
+    }
+    
+    free(data);
     _client.stop();
-    free(allData);
-    return num;
+    delay(5);
+    return num;  
 }
 
 /** 
@@ -76,130 +140,172 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
  * @return num the data that you get from the Ubidots API
  */
 float Ubidots::getValue(char* id) {
+    
+    String response;
+    int timeout = 0;
 	float num;
-	int i = 0;
-    String raw;
     uint8_t bodyPosinit;
-	uint8_t bodyPosend;
-	char reply[15];
-	_client.connect(ip, PORT);
-	if (_client.connected()) {
-    	Serial.println("Geting your variable");
-        _client.fastrprint(F("CC3000|GET|"));
-        _client.fastrprint(_token);
-        _client.fastrprint(F("|"));
-        _client.fastrprint(id);
-        _client.fastrprint(F("|end"));
-    } else {
-        Serial.println(F("Connection failed"));  
-        currentValue = 0;  
-        return NULL;
+    uint8_t max_retries = 0;
+    char* data = (char *) malloc(sizeof(char) * 300);
+
+    sprintf(data, "%s/%s|GET|%s|%s|end", USER_AGENT, VERSION, _token, id);
+
+    _client.connect(ip, PORT); // Initial connection
+
+    while(!_client.connected()){
+
+    if(_debug){
+        Serial.println("Attemping to connect");
     }
-    unsigned long lastRead = millis();
-    while (_client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-        while (_client.available()) {
-            reply[i] = _client.read();
-            Serial.print(reply[i]);
-            lastRead = millis();
-            i++;
+        _client.connect(ip, PORT);
+        max_retries++;
+        if(max_retries>5){
+            if(_debug){
+                Serial.println("Connection failed");
+            }
+            free(data);
+            return NULL;
+        }
+        delay(5000);
+    }
+
+    if(_debug){
+        Serial.println("Getting your variable: ");
+        Serial.println(data);
+    }
+        
+    _client.print(data);
+
+    while(!_client.available() && timeout < 5000) {
+        timeout++;
+        delay(1);
+        if(timeout>=5000){
+            if(_debug){
+                Serial.println("Error, max timeout reached");
+            }
+            _client.stop();
+            delay(5);
+            return NULL;
         }
     }
-    Serial.println();
-    num = atof(reply); 
-    _client.close();
+
+    while (_client.available()) {
+        char c = _client.read();
+        if (c == -1){
+            if(_debug){
+                Serial.println("Error reading from server");
+            }
+            _client.stop();
+            delay(5);
+            free(data);
+            return NULL;
+        }
+        response += c;
+        delay(10);
+    }
+
+    if(_debug){
+        Serial.println("Response: ");
+        Serial.println(response); 
+    }
+
+    bodyPosinit = 4 + response.indexOf("\r\n\r\n");    
+    response = response.substring(bodyPosinit);
+    num = response.toFloat();
+    
+    if(_debug){
+        Serial.println("Value obtained: ");
+        Serial.println(num);;
+    }
+    
+    free(data);
+    _client.stop();
+    delay(5);
     return num;
 }
-void Ubidots::add(char *variable_id, float value) {
-  add(variable_id, value, NULL);
+
+
+void Ubidots::add(char *variable_id, int value) {
+  return add(variable_id, value, NULL, NULL);
 }
-/**
- * Add a value of variable to save
- * @arg variable_id variable id to save in a struct
- * @arg value variable value to save in a struct
- */
-void Ubidots::add(char *variable_id, float value, char *ctext1) {
+
+void Ubidots::add(char *variable_id, int value, char *ctext) {
+  return add(variable_id, value, ctext, NULL);
+}
+
+void Ubidots::add(char *variable_id, int value, char *ctext, long unsigned timestamp_val) {
   (val+currentValue)->idName = variable_id;
   (val+currentValue)->idValue = value;
+  (val+currentValue)->contextOne = ctext;
+  (val+currentValue)->timestamp_val = timestamp_val;
   currentValue++;
   if (currentValue > MAX_VALUES) {
+        Serial.println(F("You are sending more than the maximum of consecutive variables"));
         currentValue = MAX_VALUES;
   }
 }
+
 /**
  * Send all data of all variables that you saved
- * @reutrn true upon success, false upon error.
+ * @return true upon success, false upon error.
  */
 bool Ubidots::sendAll() {
+
     int i;
-    String allData;
+    int timeout = 0;
+    char* allData = (char *) malloc(sizeof(char) * 700);
+
+
     if (_dsName == "CC3000") {
-        allData = USER_AGENT; 
-        allData += "|POST|";
-        allData += _token;
-        allData += "|";
-        allData += _dsTag;
-        allData += "=>";
-        //sprintf(allData, "%s|POST|%s|%s=>", USER_AGENT, _token, _dsTag);
+        sprintf(allData, "%s/%s|POST|%s|%s=>", USER_AGENT, VERSION, _token, _dsTag);
     } else {
-        allData = USER_AGENT; 
-        allData += "|POST|";
-        allData += _token;
-        allData += "|";
-        allData += _dsTag;
-        allData += ":";
-        allData += _dsName;
-        allData += "=>";
-        //sprintf(allData, "%s|POST|%s|%s:%s=>", USER_AGENT, _token, _dsTag, _dsName);
+        sprintf(allData, "%s/%s|POST|%s|%s:%s=>", USER_AGENT, VERSION, _token, _dsTag, _dsName);
     }
     for (i = 0; i < currentValue; ) {
-        allData += (val + i)->idName;
-        allData += ":";
-        allData += String((val + i)->idValue,2);
-        //sprintf(allData, "%s%s:%f", allData, (val + i)->idName, (val + i)->idValue);
+        sprintf(allData, "%s%s:%d", allData, (val + i)->idName, (val + i)->idValue);
         i++;
         if (i < currentValue) {
-            allData += ",";
-            //sprintf(allData, "%s,", allData);
+            sprintf(allData, "%s,", allData);
         }
     }
-    allData += "|end";
-    //sprintf(allData, "%s|end", allData);
-#ifdef DEBUG_UBIDOTS
-    Serial.println(allData);
-#endif
-    _client.connect(ip, PORT);
-    if (_client.connected()) {        // Connect to the server
-#ifdef DEBUG_UBIDOTS
-        Serial.println("Client connected"); 
-#endif
+
+    sprintf(allData, "%s|end", allData);
+    currentValue = 0;
+
+    Serial.println("");
+
+    if (_debug){
+     Serial.println(allData);   
+    }
+        
+    if (_client.connect(ip, PORT)) {
+        if(_debug){
+            Serial.println("Client Connected");
+        }
         _client.print(allData);
-        Serial.println("envie");
-    } else {
-        // if you couldn't make a connection:
-        Serial.println("connection failed");
-        Serial.println();
-        Serial.println("disconnecting.");
-        currentValue = 0;
-        _client.stop();
-        _client.close();
-        return false;
+    } 
+
+    while(!_client.available() && timeout < 5000) {
+        timeout++;
+        delay(1);
     }
-    while (!_client.available());
-    unsigned long lastRead = millis();
-    while (_client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-        while (_client.available()) {
-            char c = _client.read();
-            Serial.print(c);
-            lastRead = millis();
-        }
+
+    while (_client.available()) {
+        char c = _client.read();
+        Serial.write(c);
     }
-    Serial.println();
+
     _client.stop();
     _client.close();
-    currentValue = 0;
-    //free(allData);
-    return true;
+    free(allData);
 }
+
+/**
+ * DEBUG function
+ */
+void Ubidots::setDebug(bool debug){
+     _debug = debug;
+ }
 
 /**
  * Initialize the cc3000 WiFi

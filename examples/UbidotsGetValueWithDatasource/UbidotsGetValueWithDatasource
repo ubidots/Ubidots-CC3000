@@ -10,8 +10,8 @@
 #define WLAN_SECURITY   WLAN_SEC_WPA2
 
 #define TOKEN "Your_token_here"  // Replace it with your Ubidots token
-#define ID "Your_id_here" // Replace it with your Ubidots' variable ID
-
+#define DEVICE_LABEL "Your_deviceLabel_here" // Replace it with your Ubidots' device label
+#define VARIABLE_LABEL "Your_variableLabel_here" // Replace it with your Ubidots' variable label
 Ubidots client(TOKEN);
 
 void setup() {
@@ -23,7 +23,7 @@ void setup() {
 }
 
 void loop() {
-  float value = client.getValue(ID);
+  float value = client.getValueWithDatasource(DEVICE_LABEL, VARIABLE_LABEL);
   Serial.print("Value: ");
   Serial.prinln(value);
   delay(5000);

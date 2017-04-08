@@ -18,6 +18,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Made by Mateo Velez - Metavix for Ubidots Inc
+Modified by Maria Carlina Hernandez for Ubidots Inc
 */
 
 #ifndef __UbidotsCC3000_
@@ -40,13 +41,16 @@ Made by Mateo Velez - Metavix for Ubidots Inc
 #define PORT 9012
 ////////////////////////////////////// Ubidots parameters
 #define WEBSITE "translate.ubidots.com"
-#define USER_AGENT "CC3000/1.0"
+#define USER_AGENT "CC3000"
+#define VERSION "1.1"
 
 #define MAX_VALUES 3
 
 typedef struct Value {
-  char *idName;
-  float idValue;
+  char  *idName;
+  char  *contextOne;
+  int idValue;
+  unsigned long timestamp_val;
 } Value;
 
 class Ubidots{
@@ -54,7 +58,7 @@ class Ubidots{
         Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
         SPI_CLOCK_DIVIDER); // you can change this clock speed
         char* _token;
-        char* _dsTag;
+        char* _dsLabel;
         char* _dsName;
         uint8_t maxValues;
         uint8_t currentValue;
@@ -67,11 +71,17 @@ class Ubidots{
         Ubidots(char* token);
         void initialize();
         void setDebug(bool debug);
-        bool setDatasourceName(char* dsName);
-        bool setDatasourceTag(char* dsTag);
+        void setDataSourceName(char* dsName);
+<<<<<<< HEAD
+        void setDataSourceLabel(char* dsLabel);
+=======
+        void setDataSourceLabel(char* dsTag);
+
+>>>>>>> 223e710c336afd6c76fcfde0735bf3eea04adf1e
         float getValue(char* id);
-        void add(char *variable_id, float value);
-        void add(char *variable_id, float value, char* ctext);
+        void add(char *variable_id, int value);
+        void add(char *variable_id, int value, char *ctext);
+        void add(char *variable_id, int value, char *ctext, unsigned long timestamp);
         void wifiConnection(char* ssid, char* pass, uint8_t security);
         bool sendAll();
         float getValueWithDatasource(char* dsName, char* idName);

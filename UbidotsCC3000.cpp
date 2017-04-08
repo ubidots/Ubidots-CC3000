@@ -18,7 +18,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Made by Mateo Velez - Metavix for Ubidots Inc
-Modified by Maria Hernandez for Ubidots Inc
+Modified by Maria Carlina Hernandez for Ubidots Inc
 */
 
 #include "UbidotsCC3000.h"
@@ -29,9 +29,19 @@ Modified by Maria Hernandez for Ubidots Inc
 Ubidots::Ubidots(char* token) {
     _token = token;
     _dsName = "CC3000";
-    _dsTag = "CC3000";
+    _dsLabel = "CC3000";
     currentValue = 0;
     val = (Value *)malloc(MAX_VALUES*sizeof(Value));
+}
+
+void Ubidots::setDataSourceName(char *dsName) {
+
+    _dsName = dsName;
+}
+
+void Ubidots::setDataSourceLabel(char *dsLabel) {
+
+    _dsLabel = dsLabel;
 }
 
 /** 
@@ -39,7 +49,7 @@ Ubidots::Ubidots(char* token) {
  * @arg id the id where you will get the data
  * @return num the data that you get from the Ubidots API
  */
-float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
+float Ubidots::getValueWithDatasource(char* dsLabel, char* idName) {
 
   String response;
   int timeout = 0;
@@ -48,7 +58,7 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
   uint8_t max_retries = 0;
   char* data = (char *) malloc(sizeof(char) * 300);
   
-  sprintf(data, "CC3000/1.0|LV|%s|%s:%s|end", _token, dsTag, idName);
+  sprintf(data, "%s/%s|LV|%s|%s:%s|end", USER_AGENT, VERSION, _token, dsLabel, idName);
 
    _client.connect(ip, PORT); // Initial connection
 
@@ -133,12 +143,12 @@ float Ubidots::getValue(char* id) {
     
     String response;
     int timeout = 0;
-    float num;
+	float num;
     uint8_t bodyPosinit;
     uint8_t max_retries = 0;
     char* data = (char *) malloc(sizeof(char) * 300);
 
-    sprintf(data, "CC3000/1.0|GET|%s|%s|end", _token, id);
+    sprintf(data, "%s/%s|GET|%s|%s|end", USER_AGENT, VERSION, _token, id);
 
     _client.connect(ip, PORT); // Initial connection
 
@@ -214,99 +224,89 @@ float Ubidots::getValue(char* id) {
     return num;
 }
 
-void Ubidots::add(char *variable_id, float value) {
-  add(variable_id, value, NULL);
+
+void Ubidots::add(char *variable_id, int value) {
+  return add(variable_id, value, NULL, NULL);
 }
-/**
- * Add a value of variable to save
- * @arg variable_id variable id to save in a struct
- * @arg value variable value to save in a struct
- */
-void Ubidots::add(char *variable_id, float value, char *ctext1) {
+
+void Ubidots::add(char *variable_id, int value, char *ctext) {
+  return add(variable_id, value, ctext, NULL);
+}
+
+void Ubidots::add(char *variable_id, int value, char *ctext, long unsigned timestamp_val) {
   (val+currentValue)->idName = variable_id;
   (val+currentValue)->idValue = value;
+  (val+currentValue)->contextOne = ctext;
+  (val+currentValue)->timestamp_val = timestamp_val;
   currentValue++;
   if (currentValue > MAX_VALUES) {
+        Serial.println(F("You are sending more than the maximum of consecutive variables"));
         currentValue = MAX_VALUES;
   }
 }
+
 /**
  * Send all data of all variables that you saved
- * @reutrn true upon success, false upon error.
+ * @return true upon success, false upon error.
  */
 bool Ubidots::sendAll() {
+
     int i;
-    String allData;
+    int timeout = 0;
+    char* allData = (char *) malloc(sizeof(char) * 700);
+
+
     if (_dsName == "CC3000") {
-        allData = USER_AGENT; 
-        allData += "|POST|";
-        allData += _token;
-        allData += "|";
-        allData += _dsTag;
-        allData += "=>";
-        //sprintf(allData, "%s|POST|%s|%s=>", USER_AGENT, _token, _dsTag);
+        sprintf(allData, "%s/%s|POST|%s|%s=>", USER_AGENT, VERSION, _token, _dsLabel);
     } else {
-        allData = USER_AGENT; 
-        allData += "|POST|";
-        allData += _token;
-        allData += "|";
-        allData += _dsTag;
-        allData += ":";
-        allData += _dsName;
-        allData += "=>";
-        //sprintf(allData, "%s|POST|%s|%s:%s=>", USER_AGENT, _token, _dsTag, _dsName);
+        sprintf(allData, "%s/%s|POST|%s|%s:%s=>", USER_AGENT, VERSION, _token, _dsLabel, _dsName);
     }
     for (i = 0; i < currentValue; ) {
-        allData += (val + i)->idName;
-        allData += ":";
-        allData += String((val + i)->idValue,2);
-        //sprintf(allData, "%s%s:%f", allData, (val + i)->idName, (val + i)->idValue);
+        sprintf(allData, "%s%s:%d", allData, (val + i)->idName, (val + i)->idValue);
         i++;
         if (i < currentValue) {
-            allData += ",";
-            //sprintf(allData, "%s,", allData);
+            sprintf(allData, "%s,", allData);
         }
     }
-    allData += "|end";
-    //sprintf(allData, "%s|end", allData);
 
-    if(_debug){
-        Serial.println(allData);
+    sprintf(allData, "%s|end", allData);
+    currentValue = 0;
+
+    Serial.println("");
+
+    if (_debug){
+     Serial.println(allData);   
     }
-    _client.connect(ip, PORT);
-    if (_client.connected()) {        // Connect to the server
+        
+    if (_client.connect(ip, PORT)) {
         if(_debug){
-            Serial.println("Client connected");
+            Serial.println("Client Connected");
         }
         _client.print(allData);
-        Serial.println("envie");
-    } else {
-        // if you couldn't make a connection:
-        Serial.println("connection failed");
-        Serial.println();
-        Serial.println("disconnecting.");
-        currentValue = 0;
-        _client.stop();
-        _client.close();
-        return false;
+    } 
+
+    while(!_client.available() && timeout < 5000) {
+        timeout++;
+        delay(1);
     }
-    while (!_client.available());
-    unsigned long lastRead = millis();
-    while (_client.connected() && (millis() - lastRead < IDLE_TIMEOUT_MS)) {
-        while (_client.available()) {
-            char c = _client.read();
-            Serial.print(c);
-            lastRead = millis();
-        }
+
+    while (_client.available()) {
+        char c = _client.read();
+        Serial.write(c);
     }
-    Serial.println();
+
     _client.stop();
     _client.close();
-    currentValue = 0;
-    //free(allData);
-    return true;
+    free(allData);
 }
 
+void Ubidots::setDebug(bool debug){
+     _debug = debug;
+ }
+
+/**
+ * DEBUG function
+ */
 void Ubidots::setDebug(bool debug){
      _debug = debug;
  }

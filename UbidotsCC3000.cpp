@@ -300,6 +300,10 @@ bool Ubidots::sendAll() {
     free(allData);
 }
 
+void Ubidots::setDebug(bool debug){
+     _debug = debug;
+ }
+
 /**
  * DEBUG function
  */

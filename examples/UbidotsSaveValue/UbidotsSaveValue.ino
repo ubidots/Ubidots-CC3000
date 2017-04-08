@@ -12,6 +12,7 @@
 #define TOKEN "...."  // Replace it with your Ubidots token
 #define VARIABLE_LABEL "...." // Assign the variable label
 
+
 Ubidots client(TOKEN);
 
 void setup() {

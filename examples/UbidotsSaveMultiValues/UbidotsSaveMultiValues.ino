@@ -14,6 +14,7 @@
 #define VARIABLE_LABEL_2 "...." // Assign the variable label
 #define VARIABLE_LABEL_3 "...." // Assign the variable label
 
+
 Ubidots client(TOKEN);
 
 void setup() {

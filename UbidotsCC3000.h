@@ -72,7 +72,12 @@ class Ubidots{
         void initialize();
         void setDebug(bool debug);
         void setDataSourceName(char* dsName);
+<<<<<<< HEAD
         void setDataSourceLabel(char* dsLabel);
+=======
+        void setDataSourceLabel(char* dsTag);
+
+>>>>>>> 223e710c336afd6c76fcfde0735bf3eea04adf1e
         float getValue(char* id);
         void add(char *variable_id, int value);
         void add(char *variable_id, int value, char *ctext);

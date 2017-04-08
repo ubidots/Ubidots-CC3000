@@ -24,5 +24,6 @@ void loop() {
   float value = client.getValue(ID);
   Serial.print("value: ");
   Serial.println(value);
+
   delay(5000);
 }

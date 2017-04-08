@@ -29,7 +29,7 @@ Modified by Maria Carlina Hernandez for Ubidots Inc
 Ubidots::Ubidots(char* token) {
     _token = token;
     _dsName = "CC3000";
-    _dsTag = "CC3000";
+    _dsLabel = "CC3000";
     currentValue = 0;
     val = (Value *)malloc(MAX_VALUES*sizeof(Value));
 }
@@ -39,9 +39,9 @@ void Ubidots::setDataSourceName(char *dsName) {
     _dsName = dsName;
 }
 
-void Ubidots::setDataSourceLabel(char *dsTag) {
+void Ubidots::setDataSourceLabel(char *dsLabel) {
 
-    _dsTag = dsTag;
+    _dsLabel = dsLabel;
 }
 
 /** 
@@ -49,7 +49,7 @@ void Ubidots::setDataSourceLabel(char *dsTag) {
  * @arg id the id where you will get the data
  * @return num the data that you get from the Ubidots API
  */
-float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
+float Ubidots::getValueWithDatasource(char* dsLabel, char* idName) {
 
   String response;
   int timeout = 0;
@@ -58,7 +58,7 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
   uint8_t max_retries = 0;
   char* data = (char *) malloc(sizeof(char) * 300);
   
-  sprintf(data, "%s/%s|LV|%s|%s:%s|end", USER_AGENT, VERSION, _token, dsTag, idName);
+  sprintf(data, "%s/%s|LV|%s|%s:%s|end", USER_AGENT, VERSION, _token, dsLabel, idName);
 
    _client.connect(ip, PORT); // Initial connection
 
@@ -257,9 +257,9 @@ bool Ubidots::sendAll() {
 
 
     if (_dsName == "CC3000") {
-        sprintf(allData, "%s/%s|POST|%s|%s=>", USER_AGENT, VERSION, _token, _dsTag);
+        sprintf(allData, "%s/%s|POST|%s|%s=>", USER_AGENT, VERSION, _token, _dsLabel);
     } else {
-        sprintf(allData, "%s/%s|POST|%s|%s:%s=>", USER_AGENT, VERSION, _token, _dsTag, _dsName);
+        sprintf(allData, "%s/%s|POST|%s|%s:%s=>", USER_AGENT, VERSION, _token, _dsLabel, _dsName);
     }
     for (i = 0; i < currentValue; ) {
         sprintf(allData, "%s%s:%d", allData, (val + i)->idName, (val + i)->idValue);

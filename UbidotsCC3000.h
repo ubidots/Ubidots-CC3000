@@ -58,7 +58,7 @@ class Ubidots{
         Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
         SPI_CLOCK_DIVIDER); // you can change this clock speed
         char* _token;
-        char* _dsTag;
+        char* _dsLabel;
         char* _dsName;
         uint8_t maxValues;
         uint8_t currentValue;
@@ -72,7 +72,7 @@ class Ubidots{
         void initialize();
         void setDebug(bool debug);
         void setDataSourceName(char* dsName);
-        void setDataSourceLabel(char* dsTag);
+        void setDataSourceLabel(char* dsLabel);
         float getValue(char* id);
         void add(char *variable_id, int value);
         void add(char *variable_id, int value, char *ctext);

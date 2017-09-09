@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016 Ubidots.
+Copyright (c) 2017, Ubidots.
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
@@ -17,8 +17,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Made by Mateo Velez - Metavix for Ubidots Inc
-Modified by Maria Hernandez for Ubidots Inc
+Original Maker: Mateo Velez - Metavix for Ubidots Inc
+Modified and Maintened by: María Carlina Hernández ---- Developer at Ubidots Inc
+                           https://github.com/mariacarlinahernandez
+                           Jose Garcia ---- Developer at Ubidots Inc
+                           https://github.com/jotathebest
 */
 
 #include "UbidotsCC3000.h"
@@ -34,7 +37,7 @@ Ubidots::Ubidots(char* token) {
     val = (Value *)malloc(MAX_VALUES*sizeof(Value));
 }
 
-/** 
+/**
  * This function is to get value from the Ubidots API
  * @arg id the id where you will get the data
  * @return num the data that you get from the Ubidots API
@@ -47,7 +50,7 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
   uint8_t bodyPosinit;
   uint8_t max_retries = 0;
   char* data = (char *) malloc(sizeof(char) * 300);
-  
+
   sprintf(data, "CC3000/1.0|LV|%s|%s:%s|end", _token, dsTag, idName);
 
    _client.connect(ip, PORT); // Initial connection
@@ -73,7 +76,7 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
         Serial.println("Getting your variable: ");
         Serial.println(data);
     }
-        
+
     _client.print(data);
 
     while(!_client.available() && timeout < 5000) {
@@ -106,31 +109,31 @@ float Ubidots::getValueWithDatasource(char* dsTag, char* idName) {
 
     if(_debug){
         Serial.println("Response: ");
-        Serial.println(response); 
+        Serial.println(response);
     }
 
-    bodyPosinit = 4 + response.indexOf("\r\n\r\n");    
+    bodyPosinit = 4 + response.indexOf("\r\n\r\n");
     response = response.substring(bodyPosinit);
     num = response.toFloat();
-    
+
     if(_debug){
         Serial.println("Value obtained: ");
         Serial.println(num);;
     }
-    
+
     free(data);
     _client.stop();
     delay(5);
-    return num;  
+    return num;
 }
 
-/** 
+/**
  * This function is to get value from the Ubidots API
  * @arg id the id where you will get the data
  * @return num the data that you get from the Ubidots API
  */
 float Ubidots::getValue(char* id) {
-    
+
     String response;
     int timeout = 0;
     float num;
@@ -163,7 +166,7 @@ float Ubidots::getValue(char* id) {
         Serial.println("Getting your variable: ");
         Serial.println(data);
     }
-        
+
     _client.print(data);
 
     while(!_client.available() && timeout < 5000) {
@@ -196,18 +199,18 @@ float Ubidots::getValue(char* id) {
 
     if(_debug){
         Serial.println("Response: ");
-        Serial.println(response); 
+        Serial.println(response);
     }
 
-    bodyPosinit = 4 + response.indexOf("\r\n\r\n");    
+    bodyPosinit = 4 + response.indexOf("\r\n\r\n");
     response = response.substring(bodyPosinit);
     num = response.toFloat();
-    
+
     if(_debug){
         Serial.println("Value obtained: ");
         Serial.println(num);;
     }
-    
+
     free(data);
     _client.stop();
     delay(5);
@@ -238,7 +241,7 @@ bool Ubidots::sendAll() {
     int i;
     String allData;
     if (_dsName == "CC3000") {
-        allData = USER_AGENT; 
+        allData = USER_AGENT;
         allData += "|POST|";
         allData += _token;
         allData += "|";
@@ -246,7 +249,7 @@ bool Ubidots::sendAll() {
         allData += "=>";
         //sprintf(allData, "%s|POST|%s|%s=>", USER_AGENT, _token, _dsTag);
     } else {
-        allData = USER_AGENT; 
+        allData = USER_AGENT;
         allData += "|POST|";
         allData += _token;
         allData += "|";
@@ -325,7 +328,7 @@ void Ubidots::initialize() {
  * Connects to the WiFi service
  * @arg ssid the ssid of the WiFi
  * @arg pass the pass of the WiFi
- * @arg security 
+ * @arg security
  */
 void Ubidots::wifiConnection(char* ssid, char* pass, uint8_t security) {
     Serial.print(F("\nAttempting to connect to ")); Serial.println(ssid);

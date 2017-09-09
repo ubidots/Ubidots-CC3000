@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013-2016 Ubidots.
+Copyright (c) 2017, Ubidots.
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
 "Software"), to deal in the Software without restriction, including
@@ -17,7 +17,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Made by Mateo Velez - Metavix for Ubidots Inc
+Original Maker: Mateo Velez - Metavix for Ubidots Inc
+Modified and Maintened by: María Carlina Hernández ---- Developer at Ubidots Inc
+                           https://github.com/mariacarlinahernandez
+                           Jose Garcia ---- Developer at Ubidots Inc
+                           https://github.com/jotathebest
 */
 
 #ifndef __UbidotsCC3000_
@@ -36,7 +40,7 @@ Made by Mateo Velez - Metavix for Ubidots Inc
 // Use hardware SPI for the remaining pins
 // On an UNO, SCK = 13, MISO = 12, and MOSI = 11
 
-#define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds) 
+#define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds)
 #define PORT 9012
 ////////////////////////////////////// Ubidots parameters
 #define WEBSITE "translate.ubidots.com"

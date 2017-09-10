@@ -32,52 +32,56 @@ Modified and Maintened by: María Carlina Hernández ---- Developer at Ubidots I
 #include <SPI.h>
 #include <string.h>
 
-// These are the interrupt and control pins
-#define ADAFRUIT_CC3000_IRQ   3  // MUST be an interrupt pin!
-// These can be any two pins
-#define ADAFRUIT_CC3000_VBAT  5
-#define ADAFRUIT_CC3000_CS    10
-// Use hardware SPI for the remaining pins
-// On an UNO, SCK = 13, MISO = 12, and MOSI = 11
-
-#define IDLE_TIMEOUT_MS  3000      // Amount of time to wait (in milliseconds)
-#define PORT 9012
-////////////////////////////////////// Ubidots parameters
-#define WEBSITE "translate.ubidots.com"
-#define USER_AGENT "CC3000/1.0"
-
-#define MAX_VALUES 3
+namespace {
+  const char * DEFAULT_DEVICE_LABEL = "arduino-cc3000";
+  const char * SERVER = "things.ubidots.com";
+  const char * USER_AGENT = "Arduino-CC3000";
+  const char * VERSION = "2.0";
+  const int PORT = 80;
+  const float ERROR_VALUE = -3.4028235E+8;
+}
 
 typedef struct Value {
-  char *idName;
-  float idValue;
+  const char * varLabel;
+  char *context;
+  double varValue;
+  unsigned long timestamp_val;
 } Value;
 
 class Ubidots{
- private:
-        Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
-        SPI_CLOCK_DIVIDER); // you can change this clock speed
-        char* _token;
-        char* _dsTag;
-        char* _dsName;
-        uint8_t maxValues;
-        uint8_t currentValue;
-        Value * val;
-        uint32_t ip;
-        void getIpWebSite();
-        bool _debug = false;
-        Adafruit_CC3000_Client _client;
- public:
-        Ubidots(char* token);
-        void initialize();
-        void setDebug(bool debug);
-        bool setDatasourceName(char* dsName);
-        bool setDatasourceTag(char* dsTag);
-        float getValue(char* id);
-        void add(char *variable_id, float value);
-        void add(char *variable_id, float value, char* ctext);
-        void wifiConnection(char* ssid, char* pass, uint8_t security);
-        bool sendAll();
-        float getValueWithDatasource(char* dsName, char* idName);
+  private:
+    // These are the interrupt and control pins
+    uint8_t ADAFRUIT_CC3000_IRQ = 3; // MUST be an interrupt pin!
+    // These can be any two pins
+    uint8_t ADAFRUIT_CC3000_VBAT = 5;
+    uint8_t ADAFRUIT_CC3000_CS = 10;
+    // Use hardware SPI for the remaining pins
+    // On an UNO, SCK = 13, MISO = 12, and MOSI = 11
+    Adafruit_CC3000 cc3000 = Adafruit_CC3000(ADAFRUIT_CC3000_CS, ADAFRUIT_CC3000_IRQ, ADAFRUIT_CC3000_VBAT,
+    SPI_CLOCK_DIVIDER); // you can change this clock speed
+    Adafruit_CC3000_Client _client;
+    bool _debug = false;
+    const char * _deviceLabel;
+    const char * _token;
+    const char * _server;
+    int _port;
+    int dataLen(char* variable);
+    uint8_t maxValues;
+    uint8_t currentValue;
+    uint32_t ip;
+    Value * val;
+    void getIpServer();
+
+  public:
+    explicit Ubidots(const char * token, const char * server = SERVER);
+    void initialize();
+    void setDebug(bool debug);
+    float getValue(char* device_label, char* variable_label);
+    void wifiConnection(char* ssid, char* pass, uint8_t security);
+    void add(const char * variable_label, double value);
+    void add(const char * variable_label, double value, char* ctext);
+    void add(const char * variable_label, double value, char* ctext, unsigned long timestamp);
+    void setDeviceLabel(const char * new_device_label);
+    bool sendAll();
 };
 #endif

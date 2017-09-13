@@ -80,7 +80,8 @@ class Ubidots{
     void wifiConnection(char* ssid, char* pass, uint8_t security);
     void add(const char * variable_label, double value);
     void add(const char * variable_label, double value, char* ctext);
-    void add(const char * variable_label, double value, char* ctext, unsigned long timestamp);
+    void add(const char * variable_label, float value, unsigned long timestamp_val);
+    void add(const char * variable_label, double value, char* ctext, unsigned long timestamp_val);
     void setDeviceLabel(const char * new_device_label);
     bool sendAll();
 };

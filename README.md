@@ -31,7 +31,7 @@ Make sure your Arduino is powered by a 1 amp or higher rated external power supp
 
 ## Change the default name
 
-The library will create a new Ubidots device named **"Arduino-CC3000"**, also assigns the same name for the device label. if you desire to assign a differente device label, please add to your `setup()` function the line below:
+The library will create a new Ubidots device named **"Arduino-CC3000"**, also assigns the same name for the device label. if you desire to assign a different device label, please add to your `setup()` function the line below:
 
 > client.setDeviceLabel("my-new-device")
 
@@ -39,9 +39,7 @@ The library will create a new Ubidots device named **"Arduino-CC3000"**, also as
 
 To send onen value to Ubidots, go to **Sketch -> Examples -> ubidots-arduino-cc3000 library** and select the **"UbidotsSaveValue"** example.
 
-Update your WiFi crendentials, assign your Ubidots [TOKEN](http://help.ubidots.com/user-guides/find-your-token-from-your-ubidots-account) and the variable label where is indicated.
-
-Once the parameters are assigned, upload the code. Then, open the Serial monitor to check the results.
+Update your WiFi crendentials, assign your Ubidots [TOKEN](http://help.ubidots.com/user-guides/find-your-token-from-your-ubidots-account) and the variable label where is indicated. Once the parameters are assigned, upload the code. Then, open the Serial monitor to check the results.
 
 **NOTE**: If no response is seen, try unplugging your Arduino and then plugging it again. Make sure the baud rate of the Serial monitor is set to the same one specified in your code.
 
@@ -92,6 +90,111 @@ void loop() {
 ```
 
 The library allow you send just **5 variables** per request. But don't worry for that, if you desire send more than 5 variables, go to **Sketch -> Examples -> ubidots-arduino-cc3000 library** and select the **"UbidotsSaveMultiValues"** example. Don't forget update your WiFi credentials and assign your Ubidots [TOKEN](http://help.ubidots.com/user-guides/find-your-token-from-your-ubidots-account), and the variables labels where is indicated.
+
+
+### Send values with context
+
+The following example is to send one value with context to Ubidots, it will create the variable automatically with the label assign by you into the code.
+
+Add your Ubidots TOKEN where indicated, as well as the WI-FI settings.
+
+```c++
+/********************************
+ * Libraries included
+ *******************************/
+#include <UbidotsCC3000.h>
+#include <Adafruit_CC3000.h>
+#include <ccspi.h>
+#include <SPI.h>
+#include <string.h>
+
+/********************************
+ * Constants and objects
+ *******************************/
+#define WLAN_SSID       "OpenWRT"  // Your WiFi SSID, cannot be longer than 32 characters!
+#define WLAN_PASS       "Your_pass_here"  // Replace it with your WiFi pass
+// Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
+#define WLAN_SECURITY   WLAN_SEC_WPA2
+/* Assigns the Ubidots parameters */
+#define TOKEN "Your_token_here"  // Replace it with your Ubidots token
+#define VARIABLE_LABEL "position" // Assign the Ubidots variable label
+
+/* initialize the instance */
+Ubidots client(TOKEN);
+
+/********************************
+ * Main Functions
+ *******************************/
+void setup() {
+  Serial.begin(115200);
+  client.initialize();
+  client.wifiConnection(WLAN_SSID, WLAN_PASS, WLAN_SECURITY);
+  //client.setDeviceLabel("my-new-device"); // Uncomment this line to change the default device name
+  //client.setDebug(true); // Uncomment this line to set DEBUG on
+}
+
+void loop() {
+  char context[25];
+  /* Build the context to be send */
+  sprintf(context, "\"lat\":1.234, \"lng\":132.1233"); //Sends latitude and longitude for watching position in a map
+  /* Sends latitude and longitude for watching position in a map */
+  client.add(VARIABLE_LABEL, 1, context);
+  client.sendAll();
+  delay(5000);
+}
+```
+
+### Send values with timestamp
+
+The following example is to send one value with timestamp to Ubidots, it will create the variable automatically with the label assign by you into the code.
+
+Add your Ubidots TOKEN where indicated, as well as the WI-FI settings.
+
+```c++
+/********************************
+ * Libraries included
+ *******************************/
+#include <UbidotsCC3000.h>
+#include <Adafruit_CC3000.h>
+#include <ccspi.h>
+#include <SPI.h>
+#include <string.h>
+
+/********************************
+ * Constants and objects
+ *******************************/
+#define WLAN_SSID       "OpenWRT"  // Your WiFi SSID, cannot be longer than 32 characters!
+#define WLAN_PASS       "Your_pass_here"  // Replace it with your WiFi pass
+// Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
+#define WLAN_SECURITY   WLAN_SEC_WPA2
+/* Assigns the Ubidots parameters */
+#define TOKEN "Your_token_here"  // Replace it with your Ubidots token
+#define VARIABLE_LABEL "sensor" // Assign the Ubidots variable label
+
+/* initialize the instance */
+Ubidots client(TOKEN);
+
+/********************************
+ * Main Functions
+ *******************************/
+void setup() {
+  Serial.begin(115200);
+  client.initialize();
+  client.wifiConnection(WLAN_SSID, WLAN_PASS, WLAN_SECURITY);
+  //client.setDeviceLabel("my-new-device"); // Uncomment this line to change the default device name
+  //client.setDebug(true); // Uncomment this line to set DEBUG on
+}
+
+void loop() {
+  /* Sensors readings */
+  float value = analogRead(A0);
+  unsigned long timestamp = 1464661369000;
+  /* Sending values to Ubidots */
+  client.add(VARIABLE_LABEL, value, timestamp);
+  client.sendAll();
+  delay(5000);
+}
+```
 
 ## Get one value from Ubidots
 

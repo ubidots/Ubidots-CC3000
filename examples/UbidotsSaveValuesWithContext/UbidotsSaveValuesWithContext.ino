@@ -33,10 +33,11 @@ void setup() {
 }
 
 void loop() {
-  /* Sends latitude and longitude for watching position in a map */
   char context[25];
-  sprintf(context, "\"lat\":1.23, \"lng\":132.12");
+  /* Build the context to be send */
+  sprintf(context, "\"lat\":1.234, \"lng\":132.1233"); //Sends latitude and longitude for watching position in a map
+  /* Sends latitude and longitude for watching position in a map */
   client.add(VARIABLE_LABEL, 1, context);
   client.sendAll();
-  delay(5000)
+  delay(5000);
 }

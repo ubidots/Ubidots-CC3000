@@ -228,43 +228,34 @@ bool Ubidots::sendAll() {
     return false;
   }
   /* Builds the JSON to be send */
-  //char* body = (char *) malloc(sizeof(char) * 150);
-  //sprintf(body, "{");
   String body;
   body += "{";
   for (i = 0; i < currentValue;) {
     /* Saves variable value in str */
     str = String(((val+i)->varValue),2); // variable value
-    //sprintf(body, "%s\"%s\":", body, (val + i)->varLabel);
     body += "\"";
     body += (val + i)->varLabel;
     body += "\": ";
-    //body += str;
     if ((val + i)->context != '\0') {
-      //sprintf(body, "%s{\"value\":%s, \"context\":{%s}}", body, str.c_str(), (val + i)->context);
       body += "{\"value\": ";
       body += str.c_str();
       body += ", \"context\":{";
       body += (val + i)->context;
       body += "}}";
     } else if ((val + i)-> timestamp_val != '\0') {
-      //sprintf(body, "%s{\"value\":%s, \"timestamp\":%s}", body, str.c_str(), (val + i)->timestamp_val);
       body += "{\"value\":";
       body += str.c_str();
       body += ", \"timestamp\":";
       body += (val + i)->timestamp_val;
       body += "}";
     } else {
-      //sprintf(body, "%s%s", body, str.c_str());
       body += str;
     }
     i++;
     if (i < currentValue) {
-      //sprintf(body, "%s, ", body);
       body +=  ",";
     }
   }
-  //sprintf(body, "%s}", body);
   body += "}";
   if (_debug) {
     Serial.print("the body to be sent is: ");

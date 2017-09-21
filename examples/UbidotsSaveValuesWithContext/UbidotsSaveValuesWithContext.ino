@@ -16,8 +16,7 @@
 #define WLAN_SECURITY   WLAN_SEC_WPA2
 /* Assigns the Ubidots parameters */
 #define TOKEN "Your_token_here"  // Replace it with your Ubidots token
-#define DEVICE_LABEL "Your_id_here" // Replace it with your Ubidots' device label
-#define VARIABLE_LABEL "Your_id_here" // Replace it with your Ubidots' variable label
+#define VARIABLE_LABEL "position" // Assign the Ubidots variable label
 
 /* initialize the instance */
 Ubidots client(TOKEN);
@@ -29,14 +28,16 @@ void setup() {
   Serial.begin(115200);
   client.initialize();
   client.wifiConnection(WLAN_SSID, WLAN_PASS, WLAN_SECURITY);
+  //client.setDeviceLabel("my-new-device"); // Uncomment this line to change the default device name
   //client.setDebug(true); // Uncomment this line to set DEBUG on
 }
 
 void loop() {
-  /* Getting the last value from a variable */
-  float value = client.getValue(DEVICE_LABEL, VARIABLE_LABEL);
-  /* Print the value obtained */
-  Serial.print("The value obteined is: ");
-  Serial.println(value);
+  char context[25];
+  /* Build the context to be send */
+  sprintf(context, "\"lat\":1.234, \"lng\":132.1233"); //Sends latitude and longitude for watching position in a map
+  /* Sends latitude and longitude for watching position in a map */
+  client.add(VARIABLE_LABEL, 1, context);
+  client.sendAll();
   delay(5000);
 }

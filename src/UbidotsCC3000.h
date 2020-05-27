@@ -34,7 +34,7 @@ Modified and Maintened by: María Carlina Hernández ---- Developer at Ubidots I
 
 namespace {
   const char * DEFAULT_DEVICE_LABEL = "arduino-cc3000";
-  const char * SERVER = "things.ubidots.com";
+  const char * SERVER = "industrial.api.ubidots.com";
   const char * USER_AGENT = "Arduino-CC3000";
   const char * VERSION = "2.0";
   const int PORT = 80;
